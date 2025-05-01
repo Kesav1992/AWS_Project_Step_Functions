@@ -1,0 +1,60 @@
+{
+    "Comment": "Data Processing StepFunction",
+    "StartAt": "Lambda1",
+    "states": {
+        "Set Input Variables":{
+            "Type": "Pass",
+            "Assign": {
+                "stepFunctionInput": "{% $states.context.Excecution.Input %}"
+            },
+            "Next": "Lambda1"
+            },
+        "Lambda1": {
+            "Type": "Task",
+            "Resource": "${arn:aws:states:::lambda:invoke}",
+            "Arguments": {
+                "FunctionName": "${lambda1Function}",
+                "Payload": {
+                    "bucket": "{% $stepFunctionInput.bucket}"
+                }
+            },
+            "Next": "Lambda2"
+        },
+        "Lambda2": {
+            "Type": "Task",
+            "Resource": "${arn:aws:states:::lambda:invoke}",
+            "Arguments": {
+                "FunctionName": "${lambda2Function}",
+                "Payload": {
+                    "bucket": "{% $stepFunctionInput.bucket}",
+                    "lambda1_file": "{% $states.Input.lambda1_file}"
+                }
+            },
+            "Next": "Lambda3"
+        },
+        "Lambda3": {
+            "Type": "Task",
+            "Resource": "${arn:aws:states:::lambda:invoke}",
+            "Arguments": {
+                "FunctionName": "${lambda3Function}",
+                "Payload": {
+                    "bucket": "{% $stepFunctionInput.bucket}",
+                    "lambda1_file": "{% $states.Input.lambda2_file}"
+                }
+            },
+            "Next": "Lambda4"
+        },
+        "Lambda4": {
+            "Type": "Task",
+            "Resource": "${arn:aws:states:::lambda:invoke}",
+            "Arguments": {
+                "FunctionName": "${lambda4Function}",
+                "Payload": {
+                    "bucket": "{% $stepFunctionInput.bucket}",
+                    "lambda2_file": "{% $states.Input.lambda3_file}"
+                }
+            },
+            "End": true
+        }
+    }
+}

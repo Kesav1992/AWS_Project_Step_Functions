@@ -1,0 +1,118 @@
+AWSTemplateVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM Template for a Converter Step Functions workflow
+Globals:
+  Function:
+    Runtime: python3.11
+    MemorySize: 128
+    Timeout: 900 # 15 minutes
+    Architectures:
+      - x86_64
+    Environment:
+      AWS_REGION: !Ref AWS::Region
+      AWS_ACCOUNT_ID: !Ref AWS::AccountId
+      S3_BUCKET: !Ref S3BucketName
+
+Resources:
+  SharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: shared-layer
+      Description: Shared layer for common dependencies
+      ContentUri: .aws/Layers
+      CompatibleRuntimes:
+        - python3.11
+      LicenseInfo: MIT
+
+  Lambda1Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      CodeUri: ./aws/Lambdas/Lambda1Function
+      Description: Lambda function for the first step of the workflow
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        S3_BUCKET: !Ref S3BucketName
+
+  Lambda2Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      CodeUri: ./aws/Lambdas/Lambda2Function
+      Description: Lambda function for the second step of the workflow
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        S3_BUCKET: !Ref S3BucketName
+
+  Lambda3Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      CodeUri: ./aws/Lambdas/Lambda3Function
+      Description: Lambda function for the third step of the workflow
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        S3_BUCKET: !Ref S3BucketName
+
+  Lambda4Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      CodeUri: ./aws/Lambdas/Lambda4Function
+      Description: Lambda function for the fourth step of the workflow
+      Layers:
+        - !Ref SharedLayer
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        S3_BUCKET: !Ref S3BucketName
+    
+  StepFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: StepFunctionExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StepFunctionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt Lambda1Function.Arn
+                  - !GetAtt Lambda2Function.Arn
+                  - !GetAtt Lambda3Function.Arn
+                  - !GetAtt Lambda4Function.Arn
+
+  MyStatemachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: ConverterStateMachine
+      RoleArn: !GetAtt StepFunctionRole.Arn
+      DefintionUri:StepFunctions/step_functions.json
+      DefinitionSubstitutions:
+        Lambda1FunctionArn: !GetAtt Lambda1Function.Arn
+        Lambda2FunctionArn: !GetAtt Lambda2Function.Arn
+        Lambda3FunctionArn: !GetAtt Lambda3Function.Arn
+        Lambda4FunctionArn: !GetAtt Lambda4Function.Arn

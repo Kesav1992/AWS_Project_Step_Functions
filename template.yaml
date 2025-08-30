@@ -19,7 +19,7 @@ Resources:
     Properties:
       LayerName: shared-layer
       Description: Shared layer for common dependencies
-      ContentUri: .aws/Layers
+      ContentUri: ./aws/Layers
       CompatibleRuntimes:
         - python3.11
       LicenseInfo: MIT
@@ -33,7 +33,7 @@ Resources:
       Layers:
         - !Ref SharedLayer
       Policies:
-        - S3ReadPolicy:
+        - S3CrudPolicy:
             BucketName: !Ref S3BucketName
       Environment:
         S3_BUCKET: !Ref S3BucketName
@@ -47,7 +47,7 @@ Resources:
       Layers:
         - !Ref SharedLayer
       Policies:
-        - S3ReadPolicy:
+        - S3CrudPolicy:
             BucketName: !Ref S3BucketName
       Environment:
         S3_BUCKET: !Ref S3BucketName
@@ -61,7 +61,7 @@ Resources:
       Layers:
         - !Ref SharedLayer
       Policies:
-        - S3ReadPolicy:
+        - S3CrudPolicy:
             BucketName: !Ref S3BucketName
       Environment:
         S3_BUCKET: !Ref S3BucketName
@@ -75,7 +75,7 @@ Resources:
       Layers:
         - !Ref SharedLayer
       Policies:
-        - S3ReadPolicy:
+        - S3CrudPolicy:
             BucketName: !Ref S3BucketName
       Environment:
         S3_BUCKET: !Ref S3BucketName
@@ -106,11 +106,11 @@ Resources:
                   - !GetAtt Lambda4Function.Arn
 
   MyStatemachine:
-    Type: AWS::StepFunctions::StateMachine
+    Type: AWS::Serverless::StateMachine
     Properties:
-      StateMachineName: ConverterStateMachine
-      RoleArn: !GetAtt StepFunctionRole.Arn
-      DefintionUri:StepFunctions/step_functions.json
+      Name: ConverterStateMachine
+      Role: !GetAtt StepFunctionRole.Arn
+      DefinitionUri: aws/StepFunctions/step_function.json
       DefinitionSubstitutions:
         Lambda1FunctionArn: !GetAtt Lambda1Function.Arn
         Lambda2FunctionArn: !GetAtt Lambda2Function.Arn

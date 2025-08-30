@@ -3,7 +3,7 @@ import pandas as pd
 import io
 class S3Handler:
     def __init__(self):
-        s3_client = boto3.client('s3')
+        self.s3_client = boto3.client('s3')
 
     def read_csv_from_s3(self, bucket, key):
         obj = self.s3_client.get_object(Bucket=bucket, Key=key)

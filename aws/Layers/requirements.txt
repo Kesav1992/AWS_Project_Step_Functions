@@ -1,0 +1,10 @@
+# AWS Lambda Layer Dependencies
+# Core AWS SDK for Python
+boto3>=1.26.0
+
+# Data manipulation and analysis
+pandas>=1.5.0
+
+# Standard library imports (no need to include in requirements.txt):
+# - os (built-in)
+# - io (built-in)
